@@ -1,0 +1,318 @@
+<html>
+<head>
+<style>
+.textarea {
+white-space: pre-wrap;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 16px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(20px);
+  -ms-transform: translateX(20px);
+  transform: translateX(20px);
+}
+
+
+
+
+.slider.round {
+  border-radius: 30px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+
+pre {
+   font-family: "courier new", courier, monospace;
+   font-size: 14px;
+    font-weight: bold;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+.outputColumn {
+height: 92%;
+float: left;
+width:50%;
+padding: 10px;
+overflow:auto;
+
+}
+
+.bar1 {
+float: left;
+width:50%;
+padding: 10px;
+
+}
+.outputTable:after {
+    content:"";
+    width: 100%;
+    display: table;
+    clear: both;
+
+}
+
+#OneColumnArea{
+    height: 92%;
+    width:100%;
+    overflow:auto;
+
+
+}
+
+
+#TopBar{
+
+    height: 8%;
+/*position:fixed;*/
+
+
+}
+</style>
+<script>
+
+
+let MaxLinesInCol=46;
+var timerVar = null;
+
+
+
+function scrollFunction()
+{
+
+
+
+
+}
+
+function inputFunction() {
+    if (timerVar != null)
+        clearTimeout(timerVar);
+    document.getElementById("InputArea").style="display:block;";
+    document.getElementById("OutputArea").style="display:none;";
+    document.getElementById("OneColumnArea").style="display:none;";
+    var chords = document.getElementById("textArea");
+    chords.style="display:inline-block;";
+    document.getElementById("demo").innerHTML ="";
+    document.getElementById("scrollSection").style="display:none;";
+    console.log(document.getElementById("OneColSlider").checked + " slider");
+
+}
+
+function submitFunction() {
+    if (timerVar != null)
+        clearTimeout(timerVar);
+    document.getElementById("InputArea").style="display:none;";
+    document.getElementById("scrollSection").style="display:block;";
+
+    var chords = document.getElementById("textArea");
+    chords.style="display:none;";
+
+    window.lines = chords.value.split(/\r?\n/);
+    window.StartColLine = 0;
+
+    if ( document.getElementById("OneColSlider").checked )
+    {
+
+
+        document.getElementById("OneColumnArea").style="display:block;";
+        document.getElementById("OneColText").style="font-size: "+  document.getElementById("FontSize").value.toString() +"px;"
+        document.getElementById("OneColText").innerHTML = ""; 
+            for (var cnt =0; cnt < window.lines.length; cnt++)
+            {
+                var lineNo = cnt + 1;
+                document.getElementById("OneColText").innerHTML += lineNo.toString() + "  " + window.lines[cnt] + '\n';
+            }
+
+
+    }
+    else
+    {
+
+        document.getElementById("OutputArea").style="display:block;";
+        document.getElementById("col1Text").style="font-size: "+  document.getElementById("FontSize").value.toString() +"px;"
+            document.getElementById("col2Text").style="font-size: "+  document.getElementById("FontSize").value.toString() +"px;"
+            document.getElementById("col1Text").innerHTML = "";
+        document.getElementById("col2Text").innerHTML = "";
+        var maxLines = document.getElementById("LinesPerCol").value;
+        if (maxLines <= 0 || maxLines > 150)
+        {
+            maxLines = MaxLinesInCol;   
+        }
+        for (var cnt =0; cnt < window.lines.length; cnt++)
+        {
+            var lineNo = cnt + 1;
+            if(lineNo <= maxLines)
+            { 
+                document.getElementById("col1Text").innerHTML += lineNo.toString() + "  " + window.lines[cnt] + '\n';
+            }
+            else
+            {
+                if (window.StartColLine == 0 ) window.StartColLine = cnt; 
+                document.getElementById("col2Text").innerHTML += lineNo.toString() + "  " + window.lines[cnt] + '\n';
+
+            }
+        }
+    } 
+}
+
+
+async function autoScrollFunction() {
+    if (timerVar != null)
+        clearTimeout(timerVar);
+    var waitPeriod = document.getElementById("TimeToScroll").value * 1000;
+    var timeOut =  document.getElementById("ScrollSpeed").value * 1000;
+    await sleep(waitPeriod); 
+    timerVar = setInterval(autoDivScrollTimer, timeOut); 
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+function autoDivScrollTimer()
+{
+    console.log("timer called");
+    if ( document.getElementById("OneColSlider").checked )
+    {
+        var elmnt = document.getElementById("OneColumnArea");
+        elmnt.scrollTop += document.getElementById("FontSize").value * 2;
+    }
+    else
+    {
+        var elmnt = document.getElementById("OutputAreaCol2");
+        elmnt.scrollTop += document.getElementById("FontSize").value * 2;
+    }
+
+    if (StartColLine == window.lines.length - 1) 
+        clearTimeout(timerVar);
+}
+
+function autoTextScrollTimer()
+{
+    console.log("timer called");
+    StartColLine += 1;
+    var scrollText = "";
+    for (var cnt =StartColLine; cnt < window.lines.length; cnt++)
+    {
+        console.log((cnt+1).toString() + "  " + window.lines[cnt]);
+        scrollText+= (cnt+1).toString() + "  " + window.lines[cnt] + '\n';
+    }
+    if ( document.getElementById("OneColSlider").checked )
+    {
+        document.getElementById("OneColText").innerHTML = scrollText;
+    }
+    else
+    {
+        document.getElementById("col2Text").innerHTML = scrollText;
+    }
+
+    if (StartColLine == window.lines.length - 1) 
+        clearTimeout(timerVar);
+}
+
+</script>
+
+</head>
+
+<body>
+<div id="TopBar" >
+<div id="LeftBar" class="bar">
+<input id="Input" type="button" value="Input" onclick ="inputFunction()" >
+<input id="Submit" type="button" value="Submit" onclick = "submitFunction()" >
+Lines: <input id="LinesPerCol" type="text" value="45" size="3" >
+Font Size: <input id="FontSize" type="text" value="14" size="3" > px
+<label class="switch">
+  <input id="OneColSlider" type="checkbox" checked>
+  <span class="slider round"></span>
+</label>
+</div>
+<div id="scrollSection"  class="bar">
+<input id="StartScroll" type="button" value="Auto Scroll" onclick = "autoScrollFunction()" >
+Start After: <input id="TimeToScroll" type="text" value="20" size="3"> sec, &nbsp;&nbsp;
+Scroll Every: <input id="ScrollSpeed" type="text" value="2" size = "5"> sec
+</div>
+</div>
+<div id="InputArea">
+<h1 id="textAreaText" >Paste the lyrics and chords. </h1>
+<form>
+<textarea id="textArea" name="textArea" rows="40" cols="120">
+</textarea>
+</form>
+<p id="demo"></p>
+</div>
+
+<div id="OneColumnArea" class="outputTable" style ="display:none;">
+        <pre id="OneColText" ></pre>
+</div>
+
+<div id="OutputArea" class="outputTable" style ="display:none;">
+    <div id="OutputAreaCol1" class="outputColumn" style="background-color:#bbb;"> 
+        <pre id="col1Text" ></pre>
+    </div>
+    <div id="OutputAreaCol2" class= "outputColumn" style="background-color:#ccc;"> 
+        <pre id="col2Text" ></pre>
+    </div>
+</div>
+
+
+</body>
+
+</html>
